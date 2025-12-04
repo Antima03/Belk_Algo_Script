@@ -23,7 +23,7 @@ def algorithm(category,pid,std_period,loader,vendorGuideline,previous_retail_wee
     month_num_list = [i+1 for i in range(12)]
     ty_lw_sls_u_list = [loader.ty_lw_sls_u[month] for month in MONTHS]
     ly_lw_sls_u_list = [loader.ly_lw_sls_u[month] for month in MONTHS]
-
+    ly_avg_eoh=sum(std_ly_unit_sales_list)/len(std_ly_unit_sales_list)
     print(f"std_ty_unit_sales_list: {std_ty_unit_sales_list}")
     print(f"std_ly_unit_sales_list: {std_ly_unit_sales_list}")
     print(f"month_num_list: {month_num_list}")
@@ -48,11 +48,10 @@ def algorithm(category,pid,std_period,loader,vendorGuideline,previous_retail_wee
 
     month_12_fc_index = calculate_12th_month_forecast(std_ty_unit_sales_list, std_index_value)
     print(f"month_12_fc_index: {month_12_fc_index}")
-
-
+    loss=calculate_loss(loader.ty_latest_rel_act_loc_value, ly_avg_eoh)
+    month_12_fc_index =month_12_fc_index*(1+loss)
     fc_by_index = calculate_fc_by_index(index_value_dict, month_12_fc_index)
     print(f"fc_by_index: {fc_by_index}")
-
     # Calculate FC by Trend
     fc_by_trend = calculate_fc_by_trend(last_month_of_previous_month_numeric,current_month_number,std_trend, month_num_list, ty_lw_sls_u_list, ly_lw_sls_u_list)
     print(f"fc_by_trend: {fc_by_trend}")
@@ -79,7 +78,7 @@ def algorithm(category,pid,std_period,loader,vendorGuideline,previous_retail_wee
     store_trend_index_difference,store_seasonal_total_fc_by_trend,store_seasonal_total_fc_by_index=compare_seasonal_forecasts_by_method(fc_by_index,fc_by_trend,season)
     logging.info(f'store_trend_index_difference: {store_trend_index_difference}')
 
-    store_forecasting_method=decide_forecasting_method(is_inventory_maintained_store,is_inventory_maintained_ly_std_period_store,store_trend_index_difference,store_seasonal_total_fc_by_trend,store_seasonal_total_fc_by_index,std_trend,is_red_box_item=False)
+    store_forecasting_method=decide_forecasting_method(is_inventory_maintained_ly_std_period_store,store_trend_index_difference,std_ly_unit_sales_list)
     forecasting_method_original=store_forecasting_method
 
     recommended_fc=get_recommended_forecast(store_forecasting_method, fc_by_index, fc_by_trend)

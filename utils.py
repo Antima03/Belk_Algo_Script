@@ -255,36 +255,43 @@ def compare_seasonal_forecasts_by_method(fc_by_index, fc_by_trend,season_to_comp
 
 
 
-def decide_forecasting_method(is_inventory_maintained,is_inventory_maintained_ly_std_period,trend_index_difference,seasonal_total_fc_by_trend,seasonal_total_fc_by_index,std_trend,is_red_box_item):
+def decide_forecasting_method(is_inventory_maintained_ly_std_period_store,store_trend_index_difference,std_ly_unit_sales_list):
     # eom_oh=[eom_oh[month] for month in MONTHS]
 
-        # Choose forecasting method
-    if is_red_box_item:
-        forecasting_method = "FC By Index"
-        print(f"Forecasting method chosen: {forecasting_method}")
-    elif not is_inventory_maintained_ly_std_period and( std_trend>0.75 or std_trend<-0.75):
-        forecasting_method = "FC By Index"
-        print(f"Forecasting method chosen: {forecasting_method}")
-    elif std_trend < 0:
-        if seasonal_total_fc_by_trend > seasonal_total_fc_by_index:
-            forecasting_method = "FC By Trend"
-            print(f"Forecasting method chosen: {forecasting_method}")
-        else:
-            forecasting_method = "FC By Index"
-            print(f"Forecasting method chosen: {forecasting_method}")
-    elif trend_index_difference < 25:
+    #     # Choose forecasting method
+    # if is_red_box_item:
+    #     forecasting_method = "FC By Index"
+    #     print(f"Forecasting method chosen: {forecasting_method}")
+    # elif not is_inventory_maintained_ly_std_period and( std_trend>0.75 or std_trend<-0.75):
+    #     forecasting_method = "FC By Index"
+    #     print(f"Forecasting method chosen: {forecasting_method}")
+    # elif std_trend < 0:
+    #     if seasonal_total_fc_by_trend > seasonal_total_fc_by_index:
+    #         forecasting_method = "FC By Trend"
+    #         print(f"Forecasting method chosen: {forecasting_method}")
+    #     else:
+    #         forecasting_method = "FC By Index"
+    #         print(f"Forecasting method chosen: {forecasting_method}")
+    # elif trend_index_difference < 25:
+    #     forecasting_method = "Average"
+    #     print(f"Forecasting method chosen: {forecasting_method}")
+    # elif trend_index_difference > 25 and is_inventory_maintained:
+    #     forecasting_method = "FC By Trend"
+    #     print(f"Forecasting method chosen: {forecasting_method}")
+    # else :
+    #     if seasonal_total_fc_by_trend > seasonal_total_fc_by_index:
+    #         forecasting_method = "FC By Trend"
+    #         print(f"Forecasting method chosen: {forecasting_method}")
+    #     else:
+    #         forecasting_method = "FC By Index"
+    #         print(f"Forecasting method chosen: {forecasting_method}")
+    if store_trend_index_difference < 25:
         forecasting_method = "Average"
-        print(f"Forecasting method chosen: {forecasting_method}")
-    elif trend_index_difference > 25 and is_inventory_maintained:
+    elif is_inventory_maintained_ly_std_period_store and std_ly_unit_sales_list !=0:
         forecasting_method = "FC By Trend"
-        print(f"Forecasting method chosen: {forecasting_method}")
-    else :
-        if seasonal_total_fc_by_trend > seasonal_total_fc_by_index:
-            forecasting_method = "FC By Trend"
-            print(f"Forecasting method chosen: {forecasting_method}")
-        else:
-            forecasting_method = "FC By Index"
-            print(f"Forecasting method chosen: {forecasting_method}")
+    else:
+        forecasting_method = "FC By Index"
+
     return forecasting_method
 
 
@@ -316,6 +323,17 @@ def get_recommended_forecast(forecasting_method, fc_by_index, fc_by_trend):
     return recommended_fc
  
 
+
+
+def calculate_loss(door_count, average_value):
+    """
+    Calculate loss percentage from door count and average store EOM OH.
+    """
+    if average_value and not np.isnan(average_value):
+        return (door_count / average_value) - 1
+    else:
+        return 0
+        
 # New function
 
 def get_belk_vendor_info(vendorGuideline, pid):
